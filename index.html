@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGMA: Static Scene Reconstruction via Inpainting and Geometry-first Motion Aggregation for Monocular RGB Videos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      /* Color System */
+      --primary: #5E2B97;
+      --primary-light: #F2EAFB;
+      --text: #222222;
+      --text-light: #666666;
+      --bg: #FFFFFF;
+      --border: #EAEAEA;
+      --shadow: 0 2px 12px rgba(0,0,0,0.05);
+      --shadow-hover: 0 6px 20px rgba(0,0,0,0.1);
+      
+      /* Spacing System */
+      --space-sm: 16px;
+      --space-md: 24px;
+      --space-lg: 32px;
+      --space-xl: 40px;
+      --space-xxl: 60px;
+      
+      /* Typography */
+      --text-base: 16px;
+      --text-sm: 14px;
+      --text-lg: 18px;
+      
+      --radius: 6px;
+      --radius-lg: 12px;
+      --transition: all 0.2s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      background-color: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+    }
+    .teaser-item{
+      flex:1;                 /* 平均分宽度 */
+      text-align:center;      /* 让 caption 水平居中 */
+    }
+    .caption-group{
+      display:flex;          /* 横向排列 */
+      /* justify-content:center;整组居中，可按需调整 */
+      justify-content:space-between;
+      /* gap:380px;              两段文字间的距离，随意改 */
+      margin-top:-2px; 
+      align-items:center;
+      padding:0 6vw;                 /* 左右预留一点呼吸空间，随屏宽缩放 */
+      flex-wrap:wrap;                /* 宽度不够时允许换行 */
+    }
+    .caption{
+      /* margin-top:8px; */
+      font-weight:600;
+      color:var(--text);
+      background:none !important;
+      padding:0 !important; 
+      /* padding:6px 16px; */
+      /* border-radius:var(--radius); */
+      /* display:inline-block; */
+    }
+    .content-width {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    section {
+      padding: var(--space-md) 0;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.5s ease-out;
+    }
+    
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: var(--space-sm);
+      text-align: center;
+      margin-top: var(--space-lg);
+      background: linear-gradient(90deg, var(--primary), #8E44AD);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: var(--space-xl);
+      position: relative;
+      text-align: center;
+    }
+    
+    h2:after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), #8E44AD);
+      border-radius: 3px;
+    }
+    
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: var(--space-xl) 0 var(--space-md);
+      color: var(--primary);
+      text-align: center;
+    }
+    
+    p {
+      margin-bottom: var(--space-md);
+      font-size: var(--text-base);
+      text-align: center;
+    }
+    
+    /* Authors Section */
+    .authors-container {
+      margin: var(--space-xl) 0;
+      text-align: center;
+    }
+    
+    .authors-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 24px;
+      margin-bottom: 12px;
+    }
+    
+    .author-block {
+      font-size: 17px;
+      line-height: 1.4;
+    }
+    
+    .author-block a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    
+    .author-block a:hover {
+      color: var(--primary);
+    }
+    
+    /* Affiliations */
+    .affiliations {
+      margin: var(--space-md) 0 var(--space-xl);
+      text-align: center;
+      font-size: 15px;
+      color: var(--text-light);
+    }
+    
+    .affiliation-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 20px;
+      margin-bottom: 8px;
+    }
+    
+    .equal-contrib {
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    
+    .conference {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+      display: inline-block;
+      margin-bottom: var(--space-xl);
+    }
+    
+    /* Links */
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      font-size: var(--text-sm);
+      transition: var(--transition);
+    }
+    
+    .link-btn:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+    
+    .link-btn.primary {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    /* Content Blocks */
+    .abstract-container {
+      background-color: var(--primary-light);
+      padding: var(--space-lg);
+      border-radius: var(--radius);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .abstract-container p {
+      text-align: left;
+      margin-bottom: var(--space-sm);
+    }
+    
+    /* Media Elements */
+    .teaser {
+      width: 100%;
+      border-radius: var(--radius);
+      margin: var(--space-xl) auto;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: block;
+    }
+    
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: var(--radius);
+      margin: var(--space-xl) auto;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Interactive Controls */
+    .controls-card {
+      background-color: var(--primary-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      margin: var(--space-xl) auto;
+      max-width: 600px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .controls-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--primary), #8E44AD);
+    }
+    
+    .controls-title {
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--space-sm);
+    }
+    
+    .control-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-sm);
+      background: rgba(255,255,255,0.7);
+      border-radius: var(--radius);
+      transition: var(--transition);
+    }
+    
+    .control-item:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+    
+    .control-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .control-label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    /* Dataset Selector */
+    .dataset-selector {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin: var(--space-md) auto;
+    }
+    
+    /* Remove margin from demo-selector when inside dataset-selector */
+    .dataset-selector .demo-selector {
+      margin-top: 0;
+      gap: 8px;
+      margin-bottom: 0;
+    }
+    
+    .dataset-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: var(--space-sm);
+    }
+    
+    .dataset-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background-color: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    
+    .dataset-tab.active {
+      background-color: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .dataset-tab:hover:not(.active) {
+      border-color: var(--primary);
+    }
+    
+    .dataset-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .dataset-preview-item {
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+      aspect-ratio: 16/9;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    
+    .dataset-preview-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+    
+    .dataset-preview-item.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+    
+    .dataset-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .dataset-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 6px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-xl) auto;
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    
+    th, td {
+      padding: var(--space-sm);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    th {
+      font-weight: 600;
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+    
+    tr:hover {
+      background-color: #FAFAFA;
+    }
+    
+    .highlight {
+      background-color: var(--primary-light);
+      font-weight: 500;
+    }
+    
+    /* Footer */
+    footer {
+      padding: var(--space-xxl) 0;
+      text-align: center;
+      color: var(--text-light);
+      font-size: var(--text-sm);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      :root {
+        --space-xxl: 48px;
+        --space-xl: 28px;
+      }
+      
+      .container {
+        padding: 0 var(--space-md);
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+      }
+      
+      .comparison-viewer {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }
+      
+      .authors-row {
+        gap: 8px 16px;
+      }
+      
+      .controls-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    .comparison-item iframe,
+    .single-viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    #ourViewerContainer,
+    #baselineViewerContainer {
+      width: 100%;
+      height: 450px;
+    }
+    
+    /* Floating animation */
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .inline-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 1px dashed var(--primary);
+        transition: var(--transition);
+    }
+
+    .inline-link:hover {
+        color: var(--primary);
+        border-bottom-style: solid;
+    }
+
+    /* Demo Selector */
+    .demo-selector {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin: var(--space-md) auto;
+    }
+
+    .demo-thumb {
+      flex: 0 0 auto;
+      width: 200px;
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .demo-thumb:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .demo-thumb.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .demo-thumb img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+
+    .demo-thumb-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 6px;
+      font-size: var(--text-sm);
+      text-align: center;
+    }
+
+    .demo-thumb video {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .video-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .video-thumbnail video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .video-placeholder {
+      width: 100%;
+      height: 100%;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+    }
+    
+    .loading-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .loading-spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(94, 43, 151, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    .demo-info {
+      margin-top: var(--space-sm);
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    /* Viewer Container */
+    .viewer-container {
+      width: 100%;
+      border-radius: var(--radius);
+      margin: var(--space-md) auto;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .viewer-container:hover {
+      box-shadow: var(--shadow-hover);
+    }
+    
+    .single-viewer {
+      height: 700px;
+    }
+    
+    .loading-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg);
+      color: var(--text);
+      z-index: 5;
+    }
+    
+    .loading-frame .loading-spinner {
+      margin-bottom: 16px;
+      width: 40px;
+      height: 40px;
+    }
+    
+    .iframe-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* New style for the video teaser container */
+    .video-teaser-container {
+      border-radius: var(--radius);
+      overflow: hidden; /* Ensures video corners are also rounded */
+      margin: var(--space-md) auto var(--space-xl); /* Reduced top margin, keep bottom */
+      box-shadow: var(--shadow); /* Add subtle shadow like other elements */
+      border: 1px solid var(--border); /* Add subtle border */
+    }
+    .image-table th, .image-table td {
+      padding: 8px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .image-table td:first-child {
+      font-weight: 600;
+      width: 80px;
+    }
+    .image-table img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="content-width">
+        <h1>SIGMA</h1>
+        <h2><span style="text-decoration: underline;">S</span>tatic Scene Reconstruction via <span style="text-decoration: underline;">I</span>npainting and <span style="text-decoration: underline;">G</span>eometry-first <span style="text-decoration: underline;">M</span>otion <span style="text-decoration: underline;">A</span>ggregation for Monocular RGB Videos</h2>
+        
+        <div class="authors-container" style="margin-bottom: 0;">
+          <div class="authors-row">
+            <div class="author-block"><sup>1</sup><a href="https://www.linkedin.com/in/hao-tang-tsui/">Henry Tsui</a></div>
+            <div class="author-block"><sup>1</sup><a href="https://www.linkedin.com/in/laiethanlai/">Ethan Lai</a></div>
+            <div class="author-block"><sup>1</sup><a href="https://www.linkedin.com/in/yu-rou-tuan/">Yu-Rou Tuan </a></div>
+          </div>
+        </div>
+        <div class="affiliations" style="margin-top: 0;">
+          <div class="affiliation-row">
+            <div><sup>1</sup> Carnegie Mellon University</div>
+          </div>
+        </div>
+        
+        <div class="links">
+          <a href="https://github.com/SIGMA4Reconstruct/SIGMA4Reconstruct.github.io" class="link-btn">
+            <i class="fas fa-file-pdf"></i>
+            <span>Paper</span>
+          </a>
+          <a href="https://github.com/SIGMA4Reconstruct/SIGMA4Reconstruct.github.io" class="link-btn">
+            <i class="fas fa-code"></i>
+            <span>Code</span>
+          </a>
+          <a href="#bibtex" class="link-btn">
+            <i class="fas fa-quote-right"></i>
+            <span>BibTeX</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <section>
+        <!-- <div class="hero-body is-max-widescreen"> -->
+          <!-- <center> -->
+            <div class="video-teaser-container">
+              <!-- 左侧：2D Monocular Video -->
+              <div class="teaser-item">
+                <video autoplay muted loop playsinline width="100%">
+                  <source src="./demos/teaser_videos/new_demo.mp4" type="video/mp4">
+                </video>
+                
+              </div>
+            </div>
+            
+            <div style="text-align:center;margin-top:20px;">
+              <p style="margin:0;font-weight:500;color:var(--text);display:inline-block;
+                        background-color:var(--primary-light);padding:8px 20px;
+                        border-radius:var(--radius);">
+                <strong>TL;DR</strong>: SIGMA addresses the limitations of current 3D reconstructors in dynamic environments by utilizing a flow-based pipeline to detect and mask moving objects while recovering occluded backgrounds via reference-guided inpainting. This modular, geometry-first approach integrates seamlessly with foundation models to deliver clean, duplicate-free static scene reconstruction in real-time.
+              </p>
+            </div>
+          <!-- <div class="video-teaser-container">
+            <video id="teaser" autoplay muted loop playsinline width="100%">
+              <source src="./demos/teaser_videos/video_demo1.mp4" type="video/mp4">
+            </video>
+            <video id="teaser" autoplay muted loop playsinline width="100%">
+              <source src="./demos/teaser_videos/video_demo2.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="margin: 0; font-weight: 500; color: var(--text); display: inline-block; background-color: var(--primary-light); padding: 8px 20px; border-radius: var(--radius);">
+              <strong>TL;DR</strong>: Our method TAPIP3D enables robust 3D point tracking for monocular/rgbd videos by representing them as <strong>camera-stabilized spatio-temporal 3D feature clouds</strong> in world space. Local Pair Attention (LPA) is proposed to iteratively refine multi-frame 3D motion estimates.
+            </p>
+          </div> -->
+          <!-- </center> -->
+      <!-- </div> -->
+    </section>
+    
+    <!-- <section>
+      <div class="content-width">
+        <div class="teaser-container">
+          <img src="https://via.placeholder.com/1000x500/F5F5F5/757575?text=Method+Overview" alt="Method overview" class="teaser">
+          
+        </div>
+      </div>
+    </section> -->
+    
+    <section>
+      <div class="content-width">
+        <h2>Abstract</h2>
+        
+        <div class="abstract-container">
+          <p>
+            Static scene reconstruction is critical for robotics but remains challenging in real-world environments, where dynamic objects violate multi-view consistency and disrupt foundation models. We introduce a real-time framework that removes dynamic content prior to reconstruction to ensure clean scene recovery. By integrating geometry-driven motion segmentation with reference-guided inpainting, restoring occluded backgrounds, enabling off-the-shelf foundation models to fuse only consistent static geometry. To facilitate rigorous evaluation, we present a paired synthetic dataset of matched static and dynamic sequences. Experiments demonstrate that achieves robust, real-time static scene reconstruction across diverse scenarios.
+          </p>
+        </div>
+      </div>
+    </section>
+    
+    
+
+
+    <section>
+      <div class="content-width">
+        <h2>Dataset Statistics</h2>
+        <p>
+          Statistics of the paired synthetic dataset for static scene reconstruction.
+        </p>
+    
+        <p style="text-align:center; font-weight:600; margin-bottom:var(--space-sm);">
+          Table 2: Summary of per-town video and agent statistics.
+        </p>
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="text-align:center;">Each Town</th>
+              <th colspan="3" style="text-align:center; border-bottom: 1px solid var(--border);">Video Statistics</th>
+              <th colspan="3" style="text-align:center; border-bottom: 1px solid var(--border);">Agent Statistics</th>
+            </tr>
+            <tr>
+              <th style="text-align:center;">#Clips</th>
+              <th style="text-align:center;">Length (s)</th>
+              <th style="text-align:center;">FPS</th>
+              <th style="text-align:center;">Pedestrians</th>
+              <th style="text-align:center;">Vehicles</th>
+              <th style="text-align:center;">Camera Movements</th>
+            </tr>
+          </thead>
+    
+          <tbody>
+            <tr>
+              <td style="text-align:center;">-</td>
+              <td style="text-align:center;">20</td>
+              <td style="text-align:center;">15</td>
+              <td style="text-align:center;">10</td>
+              <td style="text-align:center;">80</td>
+              <td style="text-align:center;">50</td>
+              <td style="text-align:center;">10</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p style="margin-top: var(--space-xl); margin-bottom: var(--space-sm);">
+          </strong>Town descriptions (horizontal layout).
+        </p>
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;"></th>
+              <th style="text-align:center;">T1</th>
+              <th style="text-align:center;">T2</th>
+              <th style="text-align:center;">T3</th>
+              <th style="text-align:center;">T4</th>
+              <th style="text-align:center;">T5</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 600;">Description</td>
+              <td style="text-align:center;">Small town by lake</td>
+              <td style="text-align:center;">Small town</td>
+              <td style="text-align:center;">Downtown urban area</td>
+              <td style="text-align:center;">Small town</td>
+              <td style="text-align:center;">Urban area</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    
+    
+    
+    <section>
+      <div class="content-width">
+        <h2>Qualitative Results</h2>
+        <p>Comparison of Static and Dynamic scene components.</p>
+        
+        <table class="image-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Scene</th>
+              <th colspan="2">View 1</th>
+              <th colspan="2">View 2</th>
+            </tr>
+            <tr>
+              <th>Static</th>
+              <th>Dynamic</th>
+              <th>Static</th>
+              <th>Dynamic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>City 4-1</td>
+              <td><img src="./demos/table/vis0400_st.gif" alt="City 4-1 Static"></td>
+              <td><img src="./demos/table/vis0400_dy.gif" alt="City 4-1 Dynamic"></td>
+              <td><img src="./demos/table/vis0401_st.gif" alt="City 4-1 Static"></td>
+              <td><img src="./demos/table/vis0401_dy.gif" alt="City 4-1 Dynamic"></td>
+            </tr>
+            <tr>
+              <td>City 4-2</td>
+              <td><img src="./demos/table/vis0402_st.gif" alt="City 4-2 Static"></td>
+              <td><img src="./demos/table/vis0402_dy.gif" alt="City 4-2 Dynamic"></td>
+              <td><img src="./demos/table/vis0403_st.gif" alt="City 4-2 Static"></td>
+              <td><img src="./demos/table/vis0403_dy.gif" alt="City 4-2 Dynamic"></td>
+            </tr>
+            <tr>
+              <td>City 5</td>
+              <td><img src="./demos/table/vis0500_st.gif" alt="City 5 Static"></td>
+              <td><img src="./demos/table/vis0500_dy.gif" alt="City 5 Dynamic"></td>
+              <td><img src="./demos/table/vis0501_st.gif" alt="City 5 Static"></td>
+              <td><img src="./demos/table/vis0501_dy.gif" alt="City 5 Dynamic"></td>
+            </tr>
+            <tr>
+              <td>City 6</td>
+              <td><img src="./demos/table/vis0600_st.gif" alt="City 6 Static"></td>
+              <td><img src="./demos/table/vis0600_dy.gif" alt="City 6 Dynamic"></td>
+              <td><img src="./demos/table/vis0601_st.gif" alt="City 6 Static"></td>
+              <td><img src="./demos/table/vis0601_dy.gif" alt="City 6 Dynamic"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="bibtex">
+      <div class="content-width">
+        <h2>Citation</h2>
+        <div style="background-color: var(--primary-light); padding: var(--space-md); border-radius: var(--radius);">
+          <pre style="overflow-x: auto; white-space: pre-wrap; margin: 0; font-size: var(--text-sm);">
+@article{
+  title={SIGMA: Static Scene Reconstruction via Inpainting and Geometry-first Motion Aggregation for Monocular RGB Videos},
+  author={Henry Tsui, Ethan Lai and Yu-Rou Tuan},
+  journal={},
+  year={2025}
+}</pre>
+        </div>
+      </div>
+    </section>
+    
+    <footer>
+      <div class="content-width">
+        <p style="margin-top: var(--space-sm);">© 2025 TAPIP3D Authors</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Helper function to create and destroy iframes
+      const createIframe = (src, container) => {
+        const iframe = document.createElement('iframe');
+        iframe.src = src;
+        iframe.frameBorder = '0';
+        iframe.allowFullscreen = true;
+        
+        // Get the loader element in the container
+        const loader = container.querySelector('.loading-frame');
+        if (loader) {
+          loader.style.display = 'flex';
+        }
+        
+        // Create iframe container
+        const iframeContainer = document.createElement('div');
+        iframeContainer.className = 'iframe-container';
+        iframeContainer.appendChild(iframe);
+        
+        // Hide loader when iframe loads
+        iframe.onload = () => {
+          if (loader) {
+            loader.style.display = 'none';
+          }
+        };
+        
+        return iframeContainer;
+      };
+
+      const destroyIframe = (container) => {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+      };
+      
+      // Intersection Observer for section animations
+      const sections = document.querySelectorAll('section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+    });
+  </script>
+</body>
+</html>
