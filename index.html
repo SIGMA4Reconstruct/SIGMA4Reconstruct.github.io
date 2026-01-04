@@ -19,7 +19,6 @@
         <div class="hero-left">
           <h1>SIGMA</h1>
           <h2><span style="text-decoration: underline;">S</span>tatic Scene Reconstruction via <span style="text-decoration: underline;">I</span>npainting and <span style="text-decoration: underline;">G</span>eometry-first <span style="text-decoration: underline;">M</span>otion <span style="text-decoration: underline;">A</span>ggregation for Monocular RGB Videos</h2>
-          <p class="subtitle">16-822: Geometry-based Methods in Vision Fall 2025 Final Project.</p>
           <div class="authors-container no-margin-bottom">
             <div class="authors-row">
               <div class="author-block"><a href="https://www.linkedin.com/in/hao-tang-tsui/">Henry Tsui*</a></div>
@@ -119,6 +118,61 @@
               <img src="./assets/data/static_3d.gif" alt="4D Reconstruction">
             </div>
             <div class="overview-label">4D Reconstruction</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="content-width">
+        <h2>Dataset Gallery</h2>
+        <p>Hover over the slider to compare Dynamic (with moving objects) vs Static (clean background) scenes.</p>
+
+        <!-- Town Tabs (Top) -->
+        <div class="gallery-town-tabs" id="town-tabs">
+          <button class="gallery-town-tab active" data-town="Town01">Town 01</button>
+          <button class="gallery-town-tab" data-town="Town02">Town 02</button>
+          <button class="gallery-town-tab" data-town="Town03">Town 03</button>
+          <button class="gallery-town-tab" data-town="Town04">Town 04</button>
+          <button class="gallery-town-tab" data-town="Town05">Town 05</button>
+          <button class="gallery-town-tab" data-town="Town06">Town 06</button>
+          <button class="gallery-town-tab" data-town="Town07">Town 07</button>
+          <button class="gallery-town-tab" data-town="Town10HD">Town 10HD</button>
+        </div>
+
+        <!-- Main Gallery Container -->
+        <div class="gallery-container">
+          <!-- Camera Type Tabs (Left) -->
+          <div class="gallery-camera-tabs" id="camera-tabs">
+            <button class="gallery-camera-tab active" data-camera="car_forward">
+              <i class="fas fa-car"></i>
+              <span>Car Forward</span>
+            </button>
+            <button class="gallery-camera-tab" data-camera="drone_forward">
+              <i class="fas fa-helicopter"></i>
+              <span>Drone Forward</span>
+            </button>
+            <button class="gallery-camera-tab" data-camera="orbit_building">
+              <i class="fas fa-building"></i>
+              <span>Orbit Building</span>
+            </button>
+            <button class="gallery-camera-tab" data-camera="orbit_crossroad">
+              <i class="fas fa-road"></i>
+              <span>Orbit Crossroad</span>
+            </button>
+            <button class="gallery-camera-tab" data-camera="cctv">
+              <i class="fas fa-video"></i>
+              <span>CCTV</span>
+            </button>
+            <button class="gallery-camera-tab" data-camera="pedestrian">
+              <i class="fas fa-walking"></i>
+              <span>Pedestrian</span>
+            </button>
+          </div>
+
+          <!-- Comparison Slider Grid -->
+          <div class="gallery-content" id="gallery-content">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </div>
@@ -327,54 +381,12 @@
           <p class="caption text-center">Orbit/zoom the fused static 3D reconstruction.</p>
         </div>
 
-
-        <h3>Qualitative Grid</h3>
-        <p>Dynamic vs static views.</p>
-        <table class="image-table">
-          <thead>
-            <tr>
-              <th rowspan="2">Scene</th>
-              <th colspan="2">View 1</th>
-              <th colspan="2">View 2</th>
-            </tr>
-            <tr>
-              <th>Static</th>
-              <th>Dynamic</th>
-              <th>Static</th>
-              <th>Dynamic</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>City 4-1</td>
-              <td><img src="assets/data_demo/vis0400_st.gif" alt="City 4-1 Static"></td>
-              <td><img src="assets/data_demo/vis0400_dy.gif" alt="City 4-1 Dynamic"></td>
-              <td><img src="assets/data_demo/vis0401_st.gif" alt="City 4-1 Static"></td>
-              <td><img src="assets/data_demo/vis0401_dy.gif" alt="City 4-1 Dynamic"></td>
-            </tr>
-            <tr>
-              <td>City 4-2</td>
-              <td><img src="assets/data_demo/vis0402_st.gif" alt="City 4-2 Static"></td>
-              <td><img src="assets/data_demo/vis0402_dy.gif" alt="City 4-2 Dynamic"></td>
-              <td><img src="assets/data_demo/vis0403_st.gif" alt="City 4-2 Static"></td>
-              <td><img src="assets/data_demo/vis0403_dy.gif" alt="City 4-2 Dynamic"></td>
-            </tr>
-            <tr>
-              <td>City 5</td>
-              <td><img src="assets/data_demo/vis0500_st.gif" alt="City 5 Static"></td>
-              <td><img src="assets/data_demo/vis0500_dy.gif" alt="City 5 Dynamic"></td>
-              <td><img src="assets/data_demo/vis0501_st.gif" alt="City 5 Static"></td>
-              <td><img src="assets/data_demo/vis0501_dy.gif" alt="City 5 Dynamic"></td>
-            </tr>
-            <tr>
-              <td>City 6</td>
-              <td><img src="assets/data_demo/vis0600_st.gif" alt="City 6 Static"></td>
-              <td><img src="assets/data_demo/vis0600_dy.gif" alt="City 6 Dynamic"></td>
-              <td><img src="assets/data_demo/vis0601_st.gif" alt="City 6 Static"></td>
-              <td><img src="assets/data_demo/vis0601_dy.gif" alt="City 6 Dynamic"></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="content-width method-container">
+          <h2>More Results</h2>
+          <div class="scroll-wall" id="scroll-wall">
+            <!-- Dynamically populated by JS -->
+          </div>
+        </div>
       </div>
     </section>
 

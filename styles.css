@@ -1751,3 +1751,344 @@ footer {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* ==================== Dataset Gallery ==================== */
+
+/* Gallery Town Tabs */
+.gallery-town-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: var(--space-md);
+}
+
+.gallery-town-tab {
+  padding: 8px 16px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gallery-town-tab:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.gallery-town-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(94, 43, 151, 0.3);
+}
+
+/* Gallery Container */
+.gallery-container {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+  align-items: center;
+}
+
+/* Camera Tabs (Left sidebar) */
+.gallery-camera-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.gallery-camera-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 500;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.gallery-camera-tab i {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+  color: var(--primary);
+}
+
+.gallery-camera-tab:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.gallery-camera-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.gallery-camera-tab.active i {
+  color: white;
+}
+
+/* Gallery Content Area - 3 columns x 2 rows */
+.gallery-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: var(--space-sm);
+}
+
+/* Comparison Slider Card */
+.comparison-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.comparison-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.comparison-card-header {
+  background: var(--primary-light);
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--primary);
+  text-align: center;
+}
+
+.comparison-slider-wrap {
+  position: relative;
+  aspect-ratio: 16/9;
+  cursor: ew-resize;
+  overflow: hidden;
+}
+
+.comparison-slider-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.comparison-slider-wrap .img-dynamic {
+  clip-path: inset(0 50% 0 0);
+  z-index: 2;
+}
+
+.comparison-slider-wrap .img-static {
+  z-index: 1;
+}
+
+.slider-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: white;
+  transform: translateX(-50%);
+  z-index: 10;
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.slider-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 11;
+  font-size: 10px;
+  color: var(--primary);
+  pointer-events: none;
+}
+
+.comparison-label {
+  position: absolute;
+  bottom: 6px;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 3px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.comparison-label.left { left: 6px; }
+.comparison-label.right { right: 6px; }
+
+.comparison-label.left::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.comparison-label.right::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+/* Gallery Responsive */
+@media (max-width: 1000px) {
+  .gallery-content {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-container {
+    flex-direction: column;
+  }
+
+  .gallery-camera-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-width: auto;
+  }
+
+  .gallery-camera-tab {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .gallery-camera-tab span {
+    display: none;
+  }
+
+  .gallery-camera-tab i {
+    margin: 0;
+  }
+
+  .gallery-content {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gallery-town-tab {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+/* ==================== Auto-Scrolling Wall ==================== */
+.scroll-wall {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) 0;
+}
+
+.scroll-row {
+  display: flex;
+  gap: 6px;
+  animation: scrollLeft 40s linear infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.scroll-row:nth-child(even) {
+  animation: scrollRight 40s linear infinite;
+}
+
+.scroll-row:hover {
+  animation-play-state: paused;
+  z-index: 100;
+}
+
+.scroll-row-item {
+  flex-shrink: 0;
+  width: 220px;
+  height: 124px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.scroll-row-item:hover {
+  transform: scale(1.4);
+  z-index: 10;
+  box-shadow: var(--shadow-hover);
+}
+
+.scroll-row-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scroll-row-item .scroll-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: white;
+  padding: 20px 8px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.scroll-row-item:hover .scroll-label {
+  opacity: 1;
+}
+
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
