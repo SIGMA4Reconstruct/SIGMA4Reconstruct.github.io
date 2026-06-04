@@ -108,42 +108,6 @@ document.addEventListener('DOMContentLoaded', function () {
   );
   document.querySelectorAll('.reveal').forEach(s => revealObserver.observe(s));
 
-  // ============== ANIMATED STAT COUNTERS (replayable) ==============
-  const animateCount = (el) => {
-    const target = parseFloat(el.dataset.count);
-    const suffix = el.dataset.suffix || '';
-    const divisor = parseFloat(el.dataset.divisor || 1);
-    const decimals = parseInt(el.dataset.decimals || 0);
-    const duration = 1600;
-    const start = performance.now();
-    const tick = (now) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      const value = (target * eased) / divisor;
-      el.textContent = value.toFixed(decimals) + suffix;
-      if (t < 1) requestAnimationFrame(tick);
-      else el.textContent = (target / divisor).toFixed(decimals) + suffix;
-    };
-    requestAnimationFrame(tick);
-  };
-  const statObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        animateCount(e.target);
-        statObserver.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.5 });
-  document.querySelectorAll('.stat-num').forEach(el => {
-    statObserver.observe(el);
-  });
-  document.querySelectorAll('.stat-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const num = card.querySelector('.stat-num');
-      if (num) animateCount(num);
-    });
-  });
-
   // ============== 3D TILT ==============
   document.querySelectorAll('.tilt').forEach(el => {
     el.addEventListener('mousemove', (e) => {
@@ -177,16 +141,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // ============== GALLERY ==============
   const towns = ['Town01', 'Town02', 'Town03', 'Town04', 'Town05', 'Town06', 'Town07', 'Town10HD'];
   const townDisplay = {
-    Town01: 'Scenario 01', Town02: 'Scenario 02', Town03: 'Scenario 03', Town04: 'Scenario 04',
-    Town05: 'Scenario 05', Town06: 'Scenario 06', Town07: 'Scenario 07', Town10HD: 'Scenario 08'
+    Town01: 'Map 1', Town02: 'Map 2', Town03: 'Map 3', Town04: 'Map 4',
+    Town05: 'Map 5', Town06: 'Map 6', Town07: 'Map 7', Town10HD: 'Map 8'
   };
   const scenes = ['00', '01', '02', '03', '04', '05'];
+  // Scene index encodes weather, cycling every 6 indices (see dataset naming convention).
+  const sceneWeather = ['Clear', 'Hard Rain', 'Clear', 'Mid-Rain Sunset', 'Clear', 'Wet Cloudy'];
   const cameraOrder = ['car_forward', 'drone_forward', 'orbit_building', 'orbit_crossroad', 'cctv', 'pedestrian'];
   const cameras = {
     'car_forward':     { id: 'cam00', label: 'Dashcam' },
     'drone_forward':   { id: 'cam01', label: 'Drone' },
-    'orbit_building':  { id: 'cam02', label: 'Building' },
-    'orbit_crossroad': { id: 'cam03', label: 'Intersection' },
+    'orbit_building':  { id: 'cam02', label: 'Orbit (building)' },
+    'orbit_crossroad': { id: 'cam03', label: 'Orbit (intersection)' },
     'cctv':            { id: 'cam04', label: 'CCTV' },
     'pedestrian':      { id: 'cam05', label: 'Pedestrian' }
   };
@@ -206,8 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
       card.innerHTML = `
         <div class="comparison-card-header">Scene ${scene}</div>
         <div class="comparison-slider-wrap">
-          <img class="img-static"  src="assets/data_demo/${base}_static.gif"  alt="static"  loading="lazy">
-          <img class="img-dynamic" src="assets/data_demo/${base}_dynamic.gif" alt="dynamic" loading="lazy">
+          <img class="img-static"  src="assets/demo/${base}_static.gif"  alt="static"  loading="lazy">
+          <img class="img-dynamic" src="assets/demo/${base}_dynamic.gif" alt="dynamic" loading="lazy">
           <div class="slider-divider"></div>
           <div class="slider-handle"><i class="fas fa-arrows-alt-h"></i></div>
           <span class="comparison-label left">Dynamic</span>
@@ -320,9 +286,11 @@ document.addEventListener('DOMContentLoaded', function () {
         Object.entries(cameras).forEach(([camName, cam]) => {
           const base = `${town}_${scene}_${cam.id}_${camName}`;
           allPairs.push({
-            dynamic: `assets/data_demo/${base}_dynamic.gif`,
-            static:  `assets/data_demo/${base}_static.gif`,
-            label: `${townDisplay[town] || town} · ${cam.label}`
+            dynamic: `assets/demo/${base}_dynamic.gif`,
+            static:  `assets/demo/${base}_static.gif`,
+            scenario: townDisplay[town] || town,
+            weather: sceneWeather[parseInt(scene, 10)] || '',
+            camLabel: cam.label
           });
         });
       });
@@ -341,10 +309,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const pair = allPairs[(r * itemsPerRow + i) % allPairs.length];
         const item = document.createElement('div');
         item.className = 'scroll-row-item';
+        const mode = r % 2 === 0 ? 'Dynamic' : 'Static';
         const src = r % 2 === 0 ? pair.dynamic : pair.static;
+        const label = `${pair.scenario} · ${pair.weather} · ${mode} · ${pair.camLabel}`;
         item.innerHTML = `
-          <img src="${src}" alt="${pair.label}" loading="lazy" class="lightbox-img">
-          <div class="scroll-label">${pair.label}</div>`;
+          <img src="${src}" alt="${label}" loading="lazy" class="lightbox-img">
+          <div class="scroll-label">${label}</div>`;
         row.appendChild(item);
       }
       container.appendChild(row);
